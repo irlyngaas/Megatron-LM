@@ -68,7 +68,7 @@ def initialize_megatron(extra_args_provider=None, args_defaults={},
         _set_random_seed(args.seed)
 
     # Set pytorch JIT layer fusion options.
-    _set_jit_fusion_options()
+    #_set_jit_fusion_options()
 
     args = get_args()
     if  args.lazy_mpu_init:

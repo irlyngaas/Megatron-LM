@@ -21,6 +21,8 @@ from abc import abstractmethod
 import torch
 
 from apex.multi_tensor_apply import multi_tensor_applier
+#from deepspeed.ops.adam.multi_tensor_apply import MultiTensorApply
+#multi_tensor_applier=MultiTensorApply(2048*32)
 import amp_C
 
 from megatron import get_timers

@@ -21,6 +21,8 @@ import torch
 from torch.nn.parallel import DistributedDataParallel as torchDDP
 
 from apex.multi_tensor_apply import multi_tensor_applier
+#from deepspeed.ops.adam.multi_tensor_apply import MultiTensorApply
+#multi_tensor_applier=MultiTensorApply(2048*32)
 import amp_C
 
 from megatron import get_args
