@@ -28,6 +28,7 @@ from megatron.model import DistributedDataParallel as LocalDDP
 from megatron.model import Float16Module
 from megatron.model import ModelType
 
+
 def get_forward_backward_func():
     args = get_args()
     if mpu.get_pipeline_model_parallel_world_size() > 1:
@@ -42,24 +43,29 @@ def get_forward_backward_func():
         forward_backward_func = forward_backward_no_pipelining
     return forward_backward_func
 
-def free_output_tensor(output_tensors):
-    '''Pseudo-free (i.e., set to scalar) the output tensor's '.data' field.
+def deallocate_output_tensor(out):
+    '''Pseudo-deallocate (i.e., set to scalar) the output tensor's '.data' field.
 
     This method should be called right after the output tensor has been
     sent to the next pipeline stage. At this point, the output tensor is
     only useful for its '.grad_fn' field, and not its '.data'.
     '''
-    if output_tensors is None:
+    if out is None:
         return
-    if isinstance(output_tensors, torch.Tensor):
-        output_tensors = [output_tensors]
-    for output_tensor in output_tensors:
-        output_tensor.data = torch.cuda.FloatTensor([0])
+    assert isinstance(out, torch.Tensor), \
+        "expected Tensor, found %s." % type(out).__name__
+    assert out._base is None, \
+        "counter-productive to free a view of another tensor."
+    out.data = torch.empty(
+        (1,),
+        device = out.device,
+        dtype = out.dtype,
+    )
         
 def custom_backward(output, grad_output):
     '''Directly call C++ autograd engine.
 
-    To make the 'free_output_tensor' (above) optimization work, the C++
+    To make the 'deallocate_output_tensor' (above) optimization work, the C++
     autograd engine must be called directly, bypassing Pytorch's
     torch.autograd.backward. Pytorch's 'backward' checks that the output and
     grad have the same shape, while C++'s 'backward' does not.
@@ -90,6 +96,7 @@ def custom_backward(output, grad_output):
         allow_unreachable=True,
         accumulate_grad=True,
     )
+        
 
 def forward_step(forward_step_func, data_iterator, model, input_tensor, losses_reduced):
     """Forward step for passed-in model.
@@ -372,8 +379,8 @@ def forward_backward_pipelining_with_interleaving(forward_step_func, data_iterat
                     output_tensor, recv_prev=recv_prev,
                     tensor_shape=tensor_shape,
                     timers=timers)
-        free_output_tensor(output_tensor)
         input_tensors[next_forward_model_chunk_id].append(input_tensor)
+        deallocate_output_tensor(output_tensor)
 
     # Run 1F1B in steady state.
     for k in range(num_microbatches_remaining):
@@ -437,7 +444,7 @@ def forward_backward_pipelining_with_interleaving(forward_step_func, data_iterat
                     output_tensor, input_tensor_grad,
                     recv_prev=recv_prev, recv_next=recv_next,
                     tensor_shape=tensor_shape, timers=timers)
-        free_output_tensor(output_tensor)
+        deallocate_output_tensor(output_tensor)
 
         # Put input_tensor and output_tensor_grad in data structures in the
         # right location.
@@ -571,6 +578,7 @@ def forward_backward_pipelining_without_interleaving(forward_step_func, data_ite
     stages.
 
     Returns dictionary with losses if the last stage, empty dict otherwise."""
+    args = get_args()
     timers = get_timers()
 
     assert len(model) == 1
@@ -612,7 +620,7 @@ def forward_backward_pipelining_without_interleaving(forward_step_func, data_ite
         if not forward_only:
             input_tensors.append(input_tensor)
             output_tensors.append(output_tensor)
-            free_output_tensor(output_tensor)
+            deallocate_output_tensor(output_tensor[0])
 
     # Before running 1F1B, need to receive first forward tensor.
     # If all microbatches are run in warmup / cooldown phase, then no need to
@@ -641,7 +649,7 @@ def forward_backward_pipelining_without_interleaving(forward_step_func, data_ite
             # Add input_tensor and output_tensor to end of list.
             input_tensors.append(input_tensor)
             output_tensors.append(output_tensor)
-            free_output_tensor(output_tensor)
+            deallocate_output_tensor(output_tensor[0])
 
             # Pop input_tensor and output_tensor from the start of the list for
             # the backward pass.
