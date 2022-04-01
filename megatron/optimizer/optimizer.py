@@ -21,6 +21,7 @@ from abc import abstractmethod
 import torch
 
 from apex.multi_tensor_apply import multi_tensor_applier
+
 import amp_C
 
 from megatron import get_timers

@@ -250,9 +250,17 @@ void cuWelfordMuSigma2(
 template<typename U> U rsqrt(U v) {
   return U(1) / sqrt(v);
 }
+
+#if defined __HIP_PLATFORM_AMD__
+__device__ float rsqrt(float v) {
+  return rsqrtf(v);
+}
+#else
 template<> float rsqrt(float v) {
   return rsqrtf(v);
 }
+#endif
+
 template<> double rsqrt(double v) {
   return rsqrt(v);
 }
@@ -304,7 +312,7 @@ void cuApplyLayerNorm(
   // 1) blockDim.x == warpSize
   // 2) Tensors are contiguous
   //
-  for (auto i1=blockIdx.y; i1 < n1; i1 += gridDim.y) {
+  for (int i1=blockIdx.y; i1 < n1; i1 += gridDim.y) {
     SharedMemory<U> shared;
     U* buf = shared.getPointer();
     U mu,sigma2;
@@ -543,7 +551,7 @@ void cuComputeGradInput(
     const V* gamma,
     T* grad_input)
 {
-  for (auto i1=blockIdx.y; i1 < n1; i1 += gridDim.y) {
+  for (int i1=blockIdx.y; i1 < n1; i1 += gridDim.y) {
     U sum_loss1 = U(0);
     U sum_loss2 = U(0);
     const U c_mean = mean[i1];

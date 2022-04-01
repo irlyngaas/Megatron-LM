@@ -347,6 +347,10 @@ def _add_network_size_args(parser):
     group.add_argument('--bert-no-binary-head', action='store_false',
                        help='Disable BERT binary head.',
                        dest='bert_binary_head')
+    
+    group.add_argument('--HIP', type=int, default=None, 
+                       help='Use HIP to compile or not')
+                                                
 
     return parser
 
@@ -656,7 +660,7 @@ def _add_distributed_args(parser):
     group.add_argument('--num-layers-per-virtual-pipeline-stage', type=int, default=None,
                        help='Number of layers per virtual pipeline stage')
     group.add_argument('--distributed-backend', default='nccl',
-                       choices=['nccl', 'gloo'],
+                       choices=['nccl', 'gloo', 'mpi'],
                        help='Which backend to use for distributed training.')
     group.add_argument('--DDP-impl', default='local',
                        choices=['local', 'torch'],
