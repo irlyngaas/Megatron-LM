@@ -1,0 +1,177 @@
+#!/bin/bash
+
+#BSUB -nnodes 2
+#BSUB -W 0:30
+#BSUB -P med106
+#BSUB -alloc_flags "smt4 nvme"
+#BSUB -J debug
+#BSUB -o debug.%J
+#BSUB -q debug
+
+set +x
+
+module load open-ce
+conda deactivate
+conda activate /gpfs/alpine/med106/world-shared/irl1/rhel8/mytorch
+module list
+
+export OMP_NUM_THREADS=1
+#export PYTHONPATH=$PYTHONPATH:/gpfs/alpine/med106/world-shared/irl1/rhel8/fork-megatron/megatron/fused_kernels
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/gpfs/alpine/med106/world-shared/irl1/rhel8/mytorch/lib/python3.8/site-packages/torch/lib
+#export PATH=$PATH:/gpfs/alpine/med106/world-shared/irl1/rhel8/mytorch/lib/python3.8/site-packages/torch/include
+
+nodes=($(cat ${LSB_DJOB_HOSTFILE} | sort | uniq | grep -v login | grep -v batch))
+nnodes=${#nodes[@]}
+echo $nnodes
+
+DATASET_0="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000000.json_smiles_document"
+DATASET_1="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000001.json_smiles_document"
+DATASET_2="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000002.json_smiles_document"
+DATASET_3="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000003.json_smiles_document"
+DATASET_4="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000004.json_smiles_document"
+DATASET_5="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000005.json_smiles_document"
+DATASET_6="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000006.json_smiles_document"
+DATASET_7="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000007.json_smiles_document"
+DATASET_8="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000008.json_smiles_document"
+DATASET_9="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000009.json_smiles_document"
+DATASET_10="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000010.json_smiles_document"
+DATASET_11="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000011.json_smiles_document"
+DATASET_12="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000012.json_smiles_document"
+DATASET_13="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000013.json_smiles_document"
+DATASET_14="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000014.json_smiles_document"
+DATASET_15="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000015.json_smiles_document"
+DATASET_16="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000016.json_smiles_document"
+DATASET_17="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000017.json_smiles_document"
+DATASET_18="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000018.json_smiles_document"
+DATASET_19="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000019.json_smiles_document"
+DATASET_20="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000020.json_smiles_document"
+DATASET_21="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000021.json_smiles_document"
+DATASET_22="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000022.json_smiles_document"
+DATASET_23="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000023.json_smiles_document"
+DATASET_24="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000024.json_smiles_document"
+DATASET_25="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000025.json_smiles_document"
+DATASET_26="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000026.json_smiles_document"
+DATASET_27="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000027.json_smiles_document"
+DATASET_28="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000028.json_smiles_document"
+DATASET_29="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000029.json_smiles_document"
+DATASET_30="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000030.json_smiles_document"
+DATASET_31="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000031.json_smiles_document"
+DATASET_32="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000032.json_smiles_document"
+DATASET_33="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000033.json_smiles_document"
+DATASET_34="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000034.json_smiles_document"
+DATASET_35="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000035.json_smiles_document"
+DATASET_36="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000036.json_smiles_document"
+DATASET_37="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000037.json_smiles_document"
+DATASET_38="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000038.json_smiles_document"
+DATASET_39="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000039.json_smiles_document"
+DATASET_40="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000040.json_smiles_document"
+DATASET_41="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000041.json_smiles_document"
+DATASET_42="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000042.json_smiles_document"
+DATASET_43="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000043.json_smiles_document"
+DATASET_44="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000044.json_smiles_document"
+DATASET_45="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000045.json_smiles_document"
+DATASET_46="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000046.json_smiles_document"
+DATASET_47="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000047.json_smiles_document"
+DATASET_48="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000048.json_smiles_document"
+DATASET_49="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000049.json_smiles_document"
+DATASET_50="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000050.json_smiles_document"
+DATASET_51="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000051.json_smiles_document"
+DATASET_52="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000052.json_smiles_document"
+DATASET_53="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000053.json_smiles_document"
+DATASET_54="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000054.json_smiles_document"
+DATASET_55="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000055.json_smiles_document"
+DATASET_56="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000056.json_smiles_document"
+DATASET_57="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000057.json_smiles_document"
+DATASET_58="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000058.json_smiles_document"
+DATASET_59="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000059.json_smiles_document"
+DATASET_60="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000060.json_smiles_document"
+DATASET_61="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000061.json_smiles_document"
+DATASET_62="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000062.json_smiles_document"
+DATASET_63="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000063.json_smiles_document"
+DATASET_64="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000064.json_smiles_document"
+DATASET_65="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000065.json_smiles_document"
+DATASET_66="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000066.json_smiles_document"
+DATASET_67="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000067.json_smiles_document"
+DATASET_68="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000068.json_smiles_document"
+DATASET_69="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000069.json_smiles_document"
+DATASET_70="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000070.json_smiles_document"
+DATASET_71="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000071.json_smiles_document"
+DATASET_72="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000072.json_smiles_document"
+DATASET_73="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000073.json_smiles_document"
+DATASET_74="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000074.json_smiles_document"
+DATASET_75="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000075.json_smiles_document"
+DATASET_76="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000076.json_smiles_document"
+DATASET_77="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000077.json_smiles_document"
+DATASET_78="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000078.json_smiles_document"
+DATASET_79="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000079.json_smiles_document"
+DATASET_80="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000080.json_smiles_document"
+DATASET_81="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000081.json_smiles_document"
+DATASET_82="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000082.json_smiles_document"
+DATASET_83="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000083.json_smiles_document"
+DATASET_84="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000084.json_smiles_document"
+DATASET_85="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000085.json_smiles_document"
+DATASET_86="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000086.json_smiles_document"
+DATASET_87="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000087.json_smiles_document"
+DATASET_88="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000088.json_smiles_document"
+DATASET_89="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000089.json_smiles_document"
+DATASET_90="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000090.json_smiles_document"
+DATASET_91="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000091.json_smiles_document"
+DATASET_92="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000092.json_smiles_document"
+DATASET_93="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000093.json_smiles_document"
+DATASET_94="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000094.json_smiles_document"
+DATASET_95="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000095.json_smiles_document"
+DATASET_96="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000096.json_smiles_document"
+DATASET_97="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000097.json_smiles_document"
+DATASET_98="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000098.json_smiles_document"
+DATASET_99="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000099.json_smiles_document"
+DATASET_100="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000100.json_smiles_document"
+DATASET_101="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000101.json_smiles_document"
+DATASET_102="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000102.json_smiles_document"
+DATASET_103="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000103.json_smiles_document"
+DATASET_104="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000104.json_smiles_document"
+DATASET_105="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000105.json_smiles_document"
+DATASET_106="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000106.json_smiles_document"
+DATASET_107="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000107.json_smiles_document"
+DATASET_108="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000108.json_smiles_document"
+DATASET_109="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000109.json_smiles_document"
+DATASET_110="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000110.json_smiles_document"
+DATASET_111="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000111.json_smiles_document"
+
+
+
+DATASET="1.0 ${DATASET_0} 1.0 ${DATASET_1} 1.0 ${DATASET_2} 1.0 ${DATASET_3} 1.0 ${DATASET_4} 1.0 ${DATASET_5} 1.0 ${DATASET_6} 1.0 ${DATASET_7} 1.0 ${DATASET_8} 1.0 ${DATASET_9} 1.0 ${DATASET_10} 1.0 ${DATASET_11} 1.0 ${DATASET_12} 1.0 ${DATASET_13} 1.0 ${DATASET_14} 1.0 ${DATASET_15} 1.0 ${DATASET_16} 1.0 ${DATASET_17} 1.0 ${DATASET_18} 1.0 ${DATASET_19} 1.0 ${DATASET_20} 1.0 ${DATASET_21} 1.0 ${DATASET_22} 1.0 ${DATASET_23} 1.0 ${DATASET_24} 1.0 ${DATASET_25} 1.0 ${DATASET_26} 1.0 ${DATASET_27} 1.0 ${DATASET_28} 1.0 ${DATASET_29} 1.0 ${DATASET_30} 1.0 ${DATASET_31} 1.0 ${DATASET_32} 1.0 ${DATASET_33} 1.0 ${DATASET_34} 1.0 ${DATASET_35} 1.0 ${DATASET_36} 1.0 ${DATASET_37} 1.0 ${DATASET_38} 1.0 ${DATASET_39} 1.0 ${DATASET_40} 1.0 ${DATASET_41} 1.0 ${DATASET_42} 1.0 ${DATASET_43} 1.0 ${DATASET_44} 1.0 ${DATASET_45} 1.0 ${DATASET_46} 1.0 ${DATASET_47} 1.0 ${DATASET_48} 1.0 ${DATASET_49} 1.0 ${DATASET_50} 1.0 ${DATASET_51} 1.0 ${DATASET_52} 1.0 ${DATASET_53} 1.0 ${DATASET_54} 1.0 ${DATASET_55} 1.0 ${DATASET_56} 1.0 ${DATASET_57} 1.0 ${DATASET_58} 1.0 ${DATASET_59} 1.0 ${DATASET_60} 1.0 ${DATASET_61} 1.0 ${DATASET_62} 1.0 ${DATASET_63} 1.0 ${DATASET_64} 1.0 ${DATASET_65} 1.0 ${DATASET_66} 1.0 ${DATASET_67} 1.0 ${DATASET_68} 1.0 ${DATASET_69} 1.0 ${DATASET_70} 1.0 ${DATASET_71} 1.0 ${DATASET_72} 1.0 ${DATASET_73} 1.0 ${DATASET_74} 1.0 ${DATASET_75} 1.0 ${DATASET_76} 1.0 ${DATASET_77} 1.0 ${DATASET_78} 1.0 ${DATASET_79} 1.0 ${DATASET_80} 1.0 ${DATASET_81} 1.0 ${DATASET_82} 1.0 ${DATASET_83} 1.0 ${DATASET_84} 1.0 ${DATASET_85} 1.0 ${DATASET_86} 1.0 ${DATASET_87} 1.0 ${DATASET_88} 1.0 ${DATASET_89} 1.0 ${DATASET_90} 1.0 ${DATASET_91} 1.0 ${DATASET_92} 1.0 ${DATASET_93} 1.0 ${DATASET_94} 1.0 ${DATASET_95} 1.0 ${DATASET_96} 1.0 ${DATASET_97} 1.0 ${DATASET_98} 1.0 ${DATASET_99} 1.0 ${DATASET_100} 1.0 ${DATASET_101} 1.0 ${DATASET_102} 1.0 ${DATASET_103} 1.0 ${DATASET_104} 1.0 ${DATASET_105} 1.0 ${DATASET_106} 1.0 ${DATASET_107} 1.0 ${DATASET_108} 1.0 ${DATASET_109} 1.0 ${DATASET_110} 1.0 ${DATASET_111}"
+
+export VOCAB_FILE=/gpfs/alpine/world-shared/med106/g8o/pubmed_bert-vocab.txt
+export CHECKPOINT_PATH=/gpfs/alpine/med106/world-shared/irl1/rhel8/fork-megatron/2N6D2T1P
+
+jsrun --smpiargs="-disable_gpu_hooks" -n $nnodes -r 1 -g 6 -a 6 -c 42 python pretrain_bert.py \
+       --tensor-model-parallel-size 2 \
+       --pipeline-model-parallel-size 1 \
+       --num-layers 24 \
+       --hidden-size 1024 \
+       --num-attention-heads 16 \
+       --micro-batch-size 2 \
+       --global-batch-size 12 \
+       --seq-length 512 \
+       --max-position-embeddings 512 \
+       --train-iters 2000 \
+       --lr-decay-iters 990 \
+       --save $CHECKPOINT_PATH \
+       --data-path $DATASET \
+       --vocab-file $VOCAB_FILE \
+       --data-impl mmap \
+       --split 949,50,1 \
+       --distributed-backend nccl \
+       --lr 0.0001 \
+       --min-lr 0.00001 \
+       --lr-decay-style linear \
+       --lr-warmup-fraction .01 \
+       --weight-decay 1e-2 \
+       --clip-grad 1.0 \
+       --log-interval 100 \
+       --save-interval 10000 \
+       --eval-interval 1000 \
+       --eval-iters 10 \
+       --fp16 
+       #--DDP-impl torch \
+
