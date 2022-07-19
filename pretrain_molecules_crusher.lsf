@@ -9,8 +9,12 @@
 
 set +x
 
-source /gpfs/alpine/world-shared/med106/gounley1/crusher2/conda520/etc/profile.d/conda.sh
-conda activate /gpfs/alpine/world-shared/med106/gounley1/crusher2/conda520
+source /gpfs/alpine/med106/world-shared/irl1/crusher/miniconda/etc/profile.d/conda.sh
+conda activate /ccs/proj/med106/working_clone
+
+export PATH=/gpfs/alpine/world-shared/med106/gounley1/crusher/pdsh/src/pdsh:$PATH
+
+
 
 module load PrgEnv-gnu
 module load gcc/10.3.0
@@ -30,6 +34,10 @@ ranks_total=$(($ranks_per_node*$SLURM_JOB_NUM_NODES))
 #export LD_PRELOAD="/opt/cray/pe/gcc/11.2.0/snos/lib64/libstdc++.so.6 /gpfs/alpine/world-shared/bip214/rocm_smi_lib/build/rocm_smi/librocm_smi64.so"
 export LD_PRELOAD="/opt/cray/pe/gcc/11.2.0/snos/lib64/libstdc++.so.6.0.29 /gpfs/alpine/world-shared/bip214/rocm_smi_lib/build/rocm_smi/librocm_smi64.so"
 export LD_PRELOAD="${LD_PRELOAD} ${CRAY_MPICH_ROOTDIR}/gtl/lib/libmpi_gtl_hsa.so"
+
+module list
+export OMP_NUM_THREADS=1
+
 
 DATASET_0="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000000.json_smiles_document"
 DATASET_1="/gpfs/alpine/med106/scratch/xf9/Megatron-LM/preprocess_data_molecules/part-000001.json_smiles_document"
@@ -154,5 +162,5 @@ export CHECKPOINT_PATH=/gpfs/alpine/med106/scratch/xf9/Megatron-LM/2N6D2T1P
 
 srun -u -n $ranks_total -c 8 --gpus-per-task=$gpus_per_rank --gpu-bind=closest bash -c "
 source export_DDP_vars.sh
-python pretrain_bert.py --tensor-model-parallel-size 1 --pipeline-model-parallel-size 1 --num-layers 12 --hidden-size 768 --num-attention-heads 12 --micro-batch-size 256 --global-batch-size 6144 --seq-length 64 --max-position-embeddings 512 --train-iters 6000 --save $CHECKPOINT_PATH --data-path $DATASET --vocab-file $VOCAB_FILE --data-impl mmap --split 949,50,1 --distributed-backend nccl --lr 0.0001 --min-lr 0.00001 --lr-decay-style linear --lr-warmup-fraction .01 --weight-decay 1e-2 --clip-grad 1.0 --log-interval 100 --save-interval 10000 --eval-interval 100 --eval-iters 10 --bert-no-binary-head --num-workers 2 --HIP 1 --fp16"
+python pretrain_bert.py --tensor-model-parallel-size 1 --pipeline-model-parallel-size 1 --num-layers 12 --hidden-size 768 --num-attention-heads 12 --micro-batch-size 256 --global-batch-size 6144 --seq-length 64 --max-position-embeddings 512 --train-iters 6000 --save $CHECKPOINT_PATH --data-path $DATASET --vocab-file $VOCAB_FILE --data-impl mmap --split 949,50,1 --distributed-backend nccl --lr 0.0001 --min-lr 0.00001 --lr-decay-style linear --lr-warmup-fraction .01 --weight-decay 1e-2 --clip-grad 1.0 --log-interval 100 --save-interval 10000 --eval-interval 100 --eval-iters 10 --bert-no-binary-head --num-workers 2  --fp16"
 
